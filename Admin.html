@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Panel</title>
+    <style>
+        :root {
+            --primary-red: #d9262d;
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --border-color: #333333;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--background-color); color: var(--text-primary); }
+        .view { display: none; }
+        .view.active { display: block; }
+        .container { padding: 15px; padding-bottom: 90px; }
+        .form-header { display: flex; align-items: center; gap: 15px; background-color: var(--surface-color); padding: 15px; border-bottom: 1px solid var(--border-color); }
+        .back-button { background:none; border:none; color:white; cursor: pointer; }
+        .back-button svg { width: 28px; height: 28px; fill: currentColor; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h1 { font-size: 24px; }
+        .total-count { font-size: 14px; color: var(--text-secondary); }
+        .search-bar { width: 100%; padding: 12px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 16px; margin-bottom: 20px; }
+        .list-item { background-color: var(--surface-color); border-radius: 8px; padding: 15px; margin-bottom: 10px; transition: background-color: 0.3s; }
+        .item-info { display: flex; justify-content: space-between; align-items: center; }
+        .item-actions { display: flex; gap: 15px; }
+        .item-actions button { background: none; border: none; cursor: pointer; }
+        .item-actions svg { width: 22px; height: 22px; fill: var(--text-secondary); transition: fill 0.2s; }
+        .edit-btn:hover svg { fill: #42a5f5; }
+        .delete-btn:hover svg { fill: var(--primary-red); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 16px; }
+        .form-button { background-color: var(--primary-red); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background-color: var(--surface-color); display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid var(--border-color); z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); text-decoration: none; gap: 4px; cursor: pointer; flex: 1; }
+        .nav-item.active { color: var(--primary-red); }
+        .nav-item svg { width: 28px; height: 28px; fill: currentColor; }
+        .nav-item span { font-size: 12px; }
+        .fab { position: fixed; bottom: 80px; right: 20px; background-color: var(--primary-red); width: 60px; height: 60px; border-radius: 50%; border: none; color: white; font-size: 36px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1001; }
+        #options-modal { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #1f1f1f; z-index: 1002; padding: 25px 15px; padding-bottom: 30px; border-top-left-radius: 20px; border-top-right-radius: 20px; transform: translateY(100%); transition: transform 0.3s ease-in-out; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); }
+        #options-modal.show { transform: translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { font-size: 20px; }
+        .close-btn { font-size: 28px; color: white; background: none; border: none; cursor: pointer; }
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .option-button { background-color: var(--primary-red); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; text-align: center; cursor: pointer; text-decoration: none; display: block; }
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; }
+        .modal-backdrop.show { display: block; }
+    </style>
+</head>
+<body>
+    <!-- LIST VIEWS -->
+    <main id="view-movies-list" class="view active">
+        <div class="container">
+            <div class="page-header"><h1>All Movies</h1> <span id="movies-count" class="total-count">Total: 0</span></div>
+            <input type="text" id="search-movies" class="search-bar" placeholder="Search for movies...">
+            <div id="movies-list-container"></div>
+        </div>
+    </main>
+    <main id="view-banners-list" class="view">
+        <div class="container">
+            <div class="page-header"><h1>Banners</h1> <span id="banners-count" class="total-count">Total: 0</span></div>
+            <input type="text" id="search-banners" class="search-bar" placeholder="Search for banners...">
+            <div id="banners-list-container"></div>
+        </div>
+    </main>
+    <main id="view-updates-list" class="view">
+        <div class="container">
+            <div class="page-header"><h1>Updates</h1> <span id="updates-count" class="total-count">Total: 0</span></div>
+            <input type="text" id="search-updates" class="search-bar" placeholder="Search for updates...">
+            <div id="updates-list-container"></div>
+        </div>
+    </main>
+
+    <!-- FORM VIEWS -->
+    <main id="view-add-movie" class="view">
+        <header class="form-header">
+            <button class="back-button" onclick="handleBackFromForm('movies')"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg></button>
+            <h2 id="movie-form-title">Add New Movie</h2>
+        </header>
+        <div class="container">
+            <form id="add-movie-form">
+                <div class="form-group"><label>Title</label><input type="text" id="movie-title" required></div>
+                <div class="form-group"><label>Image URL</label><input type="url" id="movie-image" required></div>
+                <div class="form-group"><label>Description</label><textarea id="movie-desc" rows="4"></textarea></div>
+                <div class="form-group"><label>Language</label><input type="text" id="movie-language"></div>
+                <div class="form-group"><label>Telegram Channel Link</label><input type="url" id="movie-link" required></div>
+                <button type="submit" id="movie-form-button" class="form-button">Save Movie</button>
+            </form>
+        </div>
+    </main>
+    <main id="view-add-banner" class="view">
+        <header class="form-header">
+            <button class="back-button" onclick="handleBackFromForm('banners')"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg></button>
+            <h2 id="banner-form-title">Add Banner</h2>
+        </header>
+         <div class="container">
+            <form id="add-banner-form">
+                <div class="form-group"><label>Title</label><input type="text" id="banner-title" required></div>
+                <div class="form-group"><label>Image URL</label><input type="url" id="banner-image" required></div>
+                 <div class="form-group"><label>Description</label><textarea id="banner-desc" rows="4"></textarea></div>
+                <div class="form-group"><label>Telegram Channel Link</label><input type="url" id="banner-link" required></div>
+                <button type="submit" id="banner-form-button" class="form-button">Save Banner</button>
+            </form>
+        </div>
+    </main>
+    <main id="view-add-update" class="view">
+        <header class="form-header">
+            <button class="back-button" onclick="handleBackFromForm('updates')"><svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/></svg></button>
+            <h2 id="update-form-title">Add Update</h2>
+        </header>
+         <div class="container">
+            <form id="add-update-form">
+                <div class="form-group"><label>Title</label><input type="text" id="update-title" required></div>
+                <div class="form-group"><label>Image URL</label><input type="url" id="update-image" required></div>
+                <div class="form-group"><label>Description</label><textarea id="update-desc" rows="4"></textarea></div>
+                <button type="submit" id="update-form-button" class="form-button">Save Update</button>
+            </form>
+        </div>
+    </main>
+
+    <!-- GLOBAL UI -->
+    <button id="fab" class="fab">+</button>
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div id="options-modal">
+        <div class="modal-header"><h2>Options</h2><button class="close-btn" id="close-modal-btn">&times;</button></div>
+        <div class="options-grid">
+            <button class="option-button" onclick="navigateTo('view-add-movie')">Add Movie</button>
+            <button class="option-button" onclick="navigateTo('view-add-banner')">Add Banner</button>
+            <button class="option-button" onclick="navigateTo('view-add-update')">Add Update</button>
+        </div>
+    </div>
+    <nav class="bottom-nav">
+        <div id="nav-movies" class="nav-item active" onclick="showView('view-movies-list')">
+             <svg viewBox="0 0 24 24"><path d="M18,4L20,8H17L15,4H13L15,8H12L10,4H8L10,8H7L5,4H4A2,2 0 0,0 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V4H18Z" /></svg>
+            <span>Movies</span>
+        </div>
+        <div id="nav-banners" class="nav-item" onclick="showView('view-banners-list')">
+            <svg viewBox="0 0 24 24"><path d="M2,6V8H22V6H2M2,16V18H22V16H2M2,11V13H22V11H2Z" /></svg>
+            <span>Banners</span>
+        </div>
+        <div id="nav-updates" class="nav-item" onclick="showView('view-updates-list')">
+            <svg viewBox="0 0 24 24"><path d="M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8Z" /></svg>
+            <span>Updates</span>
+        </div>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+        import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyCuTLnlVLYCaCxKjAXYe7Bj-eSoPDJc-mw",
+          authDomain: "movie-d0965.firebaseapp.com",
+          databaseURL: "https://movie-d0965-default-rtdb.firebaseio.com",
+          projectId: "movie-d0965",
+          storageBucket: "movie-d0965.firebasestorage.app",
+          messagingSenderId: "250817539463",
+          appId: "1:250817539463:web:83922e004dd9b3c6a47722",
+          measurementId: "G-2JD0JC1BB2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getDatabase(app);
+
+        let currentEditInfo = null;
+        let allData = { movies: {}, banners: {}, updates: {} };
+
+        const allViews = document.querySelectorAll('.view');
+        const navItems = document.querySelectorAll('.nav-item');
+        const fab = document.getElementById('fab');
+        const optionsModal = document.getElementById('options-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const containers = {
+            movies: document.getElementById('movies-list-container'),
+            banners: document.getElementById('banners-list-container'),
+            updates: document.getElementById('updates-list-container')
+        };
+        const searchBars = {
+            movies: document.getElementById('search-movies'),
+            banners: document.getElementById('search-banners'),
+            updates: document.getElementById('search-updates')
+        };
+
+        window.showView = function(viewId) {
+            allViews.forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            navItems.forEach(item => item.classList.remove('active'));
+            if (viewId.includes('movies')) document.getElementById('nav-movies').classList.add('active');
+            else if (viewId.includes('banners')) document.getElementById('nav-banners').classList.add('active');
+            else if (viewId.includes('updates')) document.getElementById('nav-updates').classList.add('active');
+            fab.style.display = viewId.startsWith('view-add') ? 'none' : 'flex';
+        }
+        
+        function openOptionsModal() { modalBackdrop.classList.add('show'); optionsModal.classList.add('show'); }
+        function closeOptionsModal() { modalBackdrop.classList.remove('show'); optionsModal.classList.remove('show'); }
+        
+        window.navigateTo = function(viewId) {
+            resetFormState();
+            closeOptionsModal();
+            setTimeout(() => { showView(viewId); }, 300);
+        }
+
+        window.handleBackFromForm = function(type) {
+            resetFormState();
+            showView(`view-${type}-list`);
+        }
+
+        fab.addEventListener('click', openOptionsModal);
+        closeModalBtn.addEventListener('click', closeOptionsModal);
+        modalBackdrop.addEventListener('click', closeOptionsModal);
+
+        function renderList(container, data, type) {
+            container.innerHTML = '';
+            const items = data ? Object.entries(data).reverse() : [];
+            document.getElementById(`${type}-count`).textContent = `Total: ${items.length}`;
+            if (items.length === 0) {
+                container.innerHTML = `<p style="text-align:center; color: var(--text-secondary);">No ${type} found.</p>`;
+                return;
+            }
+            items.forEach(([key, value]) => {
+                const listItem = document.createElement('div');
+                listItem.className = 'list-item';
+                listItem.dataset.id = key; 
+                listItem.dataset.type = type;
+                listItem.innerHTML = `
+                    <div class="item-info">
+                        <span class="item-title">${value.title}</span>
+                        <div class="item-actions">
+                            <button class="edit-btn" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25Z" /></svg></button>
+                            <button class="delete-btn" title="Delete"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" /></svg></button>
+                        </div>
+                    </div>`;
+                container.appendChild(listItem);
+            });
+        }
+        
+        function handleSearch(type) {
+            const searchTerm = searchBars[type].value.toLowerCase();
+            const filteredData = Object.fromEntries(
+                Object.entries(allData[type]).filter(([key, value]) => 
+                    value.title.toLowerCase().includes(searchTerm)
+                )
+            );
+            renderList(containers[type], filteredData, type);
+        }
+        
+        Object.keys(searchBars).forEach(type => {
+            searchBars[type].addEventListener('input', () => handleSearch(type));
+        });
+
+        onValue(ref(db, 'movies/'), (snapshot) => {
+            allData.movies = snapshot.val() || {};
+            handleSearch('movies');
+        });
+        onValue(ref(db, 'banners/'), (snapshot) => {
+            allData.banners = snapshot.val() || {};
+            handleSearch('banners');
+        });
+        onValue(ref(db, 'updates/'), (snapshot) => {
+            allData.updates = snapshot.val() || {};
+            handleSearch('updates');
+        });
+
+        function resetFormState() {
+            currentEditInfo = null;
+            document.querySelectorAll('form').forEach(form => form.reset());
+            document.getElementById('movie-form-title').textContent = 'Add New Movie';
+            document.getElementById('movie-form-button').textContent = 'Save Movie';
+            document.getElementById('banner-form-title').textContent = 'Add Banner';
+            document.getElementById('banner-form-button').textContent = 'Save Banner';
+            document.getElementById('update-form-title').textContent = 'Add Update';
+            document.getElementById('update-form-button').textContent = 'Save Update';
+        }
+
+        function openEditForm(type, itemId) {
+            const itemData = allData[type][itemId];
+            if (!itemData) return;
+            currentEditInfo = { id: itemId, type: type };
+            if (type === 'movies') {
+                document.getElementById('movie-form-title').textContent = 'Edit Movie';
+                document.getElementById('movie-form-button').textContent = 'Update Movie';
+                document.getElementById('movie-title').value = itemData.title || '';
+                document.getElementById('movie-image').value = itemData.imageUrl || '';
+                document.getElementById('movie-desc').value = itemData.description || '';
+                document.getElementById('movie-language').value = itemData.language || '';
+                document.getElementById('movie-link').value = itemData.telegramLink || '';
+                showView('view-add-movie');
+            } else if (type === 'banners') {
+                document.getElementById('banner-form-title').textContent = 'Edit Banner';
+                document.getElementById('banner-form-button').textContent = 'Update Banner';
+                document.getElementById('banner-title').value = itemData.title || '';
+                document.getElementById('banner-image').value = itemData.imageUrl || '';
+                document.getElementById('banner-desc').value = itemData.description || '';
+                document.getElementById('banner-link').value = itemData.telegramLink || '';
+                showView('view-add-banner');
+            } else if (type === 'updates') {
+                document.getElementById('update-form-title').textContent = 'Edit Update';
+                document.getElementById('update-form-button').textContent = 'Update Update';
+                document.getElementById('update-title').value = itemData.title || '';
+                document.getElementById('update-image').value = itemData.imageUrl || '';
+                document.getElementById('update-desc').value = itemData.description || '';
+                showView('view-add-update');
+            }
+        }
+
+        document.getElementById('add-movie-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('movie-title').value,
+                imageUrl: document.getElementById('movie-image').value,
+                description: document.getElementById('movie-desc').value,
+                language: document.getElementById('movie-language').value,
+                telegramLink: document.getElementById('movie-link').value,
+            };
+            if (currentEditInfo && currentEditInfo.type === 'movies') {
+                update(ref(db, `movies/${currentEditInfo.id}`), data).then(() => {
+                    alert('Movie Updated!');
+                    handleBackFromForm('movies');
+                });
+            } else {
+                set(push(ref(db, 'movies/')), data).then(() => {
+                    alert('Movie Added!');
+                    handleBackFromForm('movies');
+                });
+            }
+        });
+        
+        document.getElementById('add-banner-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('banner-title').value,
+                imageUrl: document.getElementById('banner-image').value,
+                description: document.getElementById('banner-desc').value,
+                telegramLink: document.getElementById('banner-link').value,
+            };
+            if (currentEditInfo && currentEditInfo.type === 'banners') {
+                update(ref(db, `banners/${currentEditInfo.id}`), data).then(() => {
+                    alert('Banner Updated!');
+                    handleBackFromForm('banners');
+                });
+            } else {
+                set(push(ref(db, 'banners/')), data).then(() => {
+                    alert('Banner Added!');
+                    handleBackFromForm('banners');
+                });
+            }
+        });
+
+        document.getElementById('add-update-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('update-title').value,
+                imageUrl: document.getElementById('update-image').value,
+                description: document.getElementById('update-desc').value,
+            };
+            if (currentEditInfo && currentEditInfo.type === 'updates') {
+                update(ref(db, `updates/${currentEditInfo.id}`), data).then(() => {
+                    alert('Update Modified!');
+                    handleBackFromForm('updates');
+                });
+            } else {
+                set(push(ref(db, 'updates/')), data).then(() => {
+                    alert('Update Added!');
+                    handleBackFromForm('updates');
+                });
+            }
+        });
+
+        function handleListActions(event) {
+            const actionButton = event.target.closest('.delete-btn, .edit-btn');
+            if (!actionButton) return;
+            const listItem = actionButton.closest('.list-item');
+            const itemId = listItem.dataset.id;
+            const itemType = listItem.dataset.type;
+            const itemTitle = listItem.querySelector('.item-title').textContent;
+            if (actionButton.classList.contains('delete-btn')) {
+                if (confirm(`Are you sure you want to delete "${itemTitle}"?`)) {
+                    remove(ref(db, `${itemType}/${itemId}`)).then(() => alert(`"${itemTitle}" deleted.`));
+                }
+            } else if (actionButton.classList.contains('edit-btn')) {
+                openEditForm(itemType, itemId);
+            }
+        }
+        Object.values(containers).forEach(c => c.addEventListener('click', handleListActions));
+    </script>
+</body>
+</html>
