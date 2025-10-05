@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M4 FLIX</title>
+    <title>Movie Flix</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -49,13 +49,38 @@
             overflow: hidden;
             border-radius: 12px;
             margin-bottom: 20px;
+            background-color: var(--surface-color);
         }
-        .slider-wrapper { display: flex; height: 100%; transition: transform 0.7s ease-in-out; }
+        .slider-wrapper { display: flex; height: 100%; }
         .slide { flex-shrink: 0; width: 100%; height: 100%; position: relative; background-size: cover; background-position: center; }
         .slide::after { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to right, rgba(0,0,0,0.8) 20%, rgba(0,0,0,0.1) 80%); }
-        .slide-content { position: absolute; bottom: 20px; left: 20px; z-index: 2; color: white; max-width: 60%; }
-        .slide-title { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
-        .slide-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 15px; }
+        .slide-content { position: absolute; bottom: 20px; left: 20px; z-index: 2; color: white; max-width: 65%; }
+        
+        .slide-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .slide-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .slide-content .watch-now-btn {
+            background: var(--primary-red);
+            color: white;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
         .slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 3; }
         .dot { width: 10px; height: 10px; background-color: rgba(255, 255, 255, 0.5); border-radius: 50%; cursor: pointer; transition: background-color 0.3s; }
         .dot.active { background-color: var(--primary-red); }
@@ -76,32 +101,65 @@
         .release-poster { width: 100%; height: 90px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; background-color: var(--surface-color); }
         .release-title { font-size: 14px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .manga-list { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .list-item { background-color: var(--surface-color); display: flex; padding: 15px; border-radius: 12px; gap: 15px; cursor: pointer; }
-        
+        .manga-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .list-item {
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
         .list-item-poster {
-            width: 100px;
-            flex-shrink: 0;
+            width: 100%;
             position: relative;
         }
-        .list-item-poster img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; background-color: #333; }
+        .list-item-poster img {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            display: block;
+            background-color: #333;
+        }
         .language-tag {
             position: absolute;
             top: 8px;
             right: 8px;
-            background-color: rgba(0, 0, 0, 0.75);
+            background-color: var(--primary-red);
             color: white;
             padding: 4px 8px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: bold;
         }
-
-        .list-item-info { display: flex; flex-direction: column; flex-grow: 1; }
-        .list-item-title { font-size: 18px; font-weight: 600; margin-bottom: 5px; color: var(--text-primary); }
-        .list-item-meta { font-size: 14px; color: var(--primary-red); margin-bottom: 8px; font-weight: 500; }
-        .list-item-desc { font-size: 13px; line-height: 1.5; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 12px; }
-        .watch-now-btn { background: linear-gradient(to right, var(--primary-red), var(--primary-red-dark)); color: white; padding: 10px 15px; border: none; border-radius: 8px; cursor: pointer; margin-top: auto; font-size: 14px; font-weight: bold; align-self: flex-start; }
+        .list-item-info {
+            padding: 12px;
+        }
+        .list-item-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--primary-red);
+            line-height: 1.4;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .list-item-meta {
+            display: -webkit-box;
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
         
         #details-view { padding: 15px; }
         .details-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
@@ -121,13 +179,65 @@
         #search-page-input:focus { outline: none; }
         .search-btn-text { background: none; border: none; color: var(--primary-red); font-size: 16px; font-weight: 600; cursor: pointer; padding-left: 5px; }
         .search-content-wrapper { flex: 1; overflow-y: auto; padding: 15px; min-height: 0; }
+
+        #search-view .manga-list,
+        #category-view .manga-list {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        #search-view .list-item,
+        #category-view .list-item {
+            flex-direction: row;
+            align-items: center;
+            padding: 10px;
+            gap: 15px;
+            overflow: visible;
+        }
+        #search-view .list-item-poster,
+        #category-view .list-item-poster {
+            width: 80px;
+            flex-shrink: 0;
+        }
+        #search-view .list-item-poster img,
+        #category-view .list-item-poster img {
+            height: 110px;
+            aspect-ratio: auto;
+            border-radius: 8px;
+        }
+        #search-view .list-item-info,
+        #category-view .list-item-info {
+            padding: 0;
+            flex-grow: 1;
+        }
+        #search-view .list-item-title,
+        #category-view .list-item-title {
+            white-space: normal;
+            font-size: 16px;
+            font-weight: 600;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            display: -webkit-box;
+            overflow: hidden;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        #search-view .list-item-meta,
+        #category-view .list-item-meta {
+            display: -webkit-box;
+            color: var(--text-secondary);
+            font-size: 13px;
+            line-height: 1.5;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
     <header class="top-header">
         <div class="logo-title">
-            <a href="#" class="logo"><img src="https://files.catbox.moe/chq0gm.jpg" alt="Logo"></a>
-            <h1 class="website-name">M4 FLIX</h1>
+            <a href="#" class="logo"><img src="https://files.catbox.moe/rd0gb6.jpg" alt="Logo"></a>
+            <h1 class="website-name">Movie Flix</h1>
         </div>
         <div class="header-search"><div class="search-bar-mock" onclick="showView('search-view')"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg><span>Search...</span></div></div>
     </header>
@@ -176,75 +286,175 @@
         let allUpdatesData = [];
         let currentViewId = 'home-view';
         let lastView = 'home-view';
-        let sliderInterval;
-
+        
         function renderHomePage() {
             const homeView = document.getElementById('home-view');
+            if (!homeView) return;
             const listItemsHTML = allMoviesData.map(createDetailedListItem).join('');
             
             const partners = [
-                { name: "Prime Video", logoUrl: "https://files.catbox.moe/90qa3f.jpg" },
-                { name: "ZEE5", logoUrl: "https://files.catbox.moe/ltdksk.jpg" },
-                { name: "Player", logoUrl: "https://files.catbox.moe/kagodn.jpg" },
-                { name: "Disney+", logoUrl: "https://files.catbox.moe/q5lvdy.jpg" },
-                { name: "Netflix", logoUrl: "https://files.catbox.moe/qxi9by.jpg" }
+                { name: "Prime Video", logoUrl: "https://files.catbox.moe/90qa3f.jpg", link: "https://www.primevideo.com/" },
+                { name: "ZEE5", logoUrl: "https://files.catbox.moe/ltdksk.jpg", link: "https://www.zee5.com/" },
+                { name: "Player", logoUrl: "https://files.catbox.moe/kagodn.jpg", link: "https://www.mxplayer.in/" },
+                { name: "Disney+", logoUrl: "https://files.catbox.moe/q5lvdy.jpg", link: "https://www.hotstar.com/" },
+                { name: "Netflix", logoUrl: "https://files.catbox.moe/qxi9by.jpg", link: "https://www.netflix.com/" }
             ];
             
-            const partnersHTML = `<h3 class="powered-by-title">Powered by</h3><div class="partners-container"><div class="partners-list">${partners.map(p => `<div class="partner-item"><div class="partner-logo"><img src="${p.logoUrl}" alt="${p.name}"></div><p class="partner-name">${p.name}</p></div>`).join('')}</div></div>`;
+            const partnersHTML = `<h3 class="powered-by-title">Powered by</h3><div class="partners-container"><div class="partners-list">${partners.map(p => `<a href="${p.link}" target="_blank" style="text-decoration: none;"><div class="partner-item"><div class="partner-logo"><img src="${p.logoUrl}" alt="${p.name}"></div><p class="partner-name">${p.name}</p></div></a>`).join('')}</div></div>`;
+            
             const newReleasesHTML = `<section><h2 class="section-title">New Release 🎬</h2><div class="new-releases-container">${allUpdatesData.map(item => `<div class="release-item" onclick="showDetailsPage('${item.id}', 'update')"><img src="${item.imageUrl}" alt="${item.title}" class="release-poster"><h3 class="release-title">${item.title}</h3></div>`).join('')}</div></section>`;
             const sliderHTML = `<div class="slider-container"><div class="slider-wrapper">${allBannersData.map(createSlide).join('')}</div><div class="slider-dots">${allBannersData.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join('')}</div></div>`;
             
             homeView.innerHTML = `${sliderHTML}${partnersHTML}${newReleasesHTML}<h2 class="section-title">Latest Uploads</h2><section class="manga-list">${listItemsHTML}</section>`;
             
-            if (allBannersData.length > 0) { activateSlider(); }
+            if (allBannersData.length > 0) {
+                activateSlider();
+            }
         }
 
-        function createSlide(item) { return `<div class="slide" style="background-image: url('${item.imageUrl}');" onclick="showDetailsPage('${item.id}', 'banner')"><div class="slide-content"><h2 class="slide-title">${item.title}</h2><p class="slide-desc">${(item.description || '').substring(0, 100)}...</p><button class="watch-now-btn" onclick="event.stopPropagation(); showDetailsPage('${item.id}', 'banner')">Watch Now</button></div></div>`; }
+        function createSlide(item) { 
+            const desc = item.description || '';
+            return `<div class="slide" style="background-image: url('${item.imageUrl}');" onclick="showDetailsPage('${item.id}', 'banner')">
+                        <div class="slide-content">
+                            <h2 class="slide-title">${item.title}</h2>
+                            <p class="slide-desc">${desc}</p>
+                            <button class="watch-now-btn" onclick="event.stopPropagation(); showDetailsPage('${item.id}', 'banner')">Watch Now</button>
+                        </div>
+                    </div>`;
+        }
         
         function createDetailedListItem(item) {
              const languageTagHTML = item.language ? `<span class="language-tag">${item.language}</span>` : '';
-             return `<div class="list-item" onclick="showDetailsPage('${item.id}', 'movie')"><div class="list-item-poster"><img loading="lazy" src="${item.imageUrl}" alt="${item.title}">${languageTagHTML}</div><div class="list-item-info"><h3 class="list-item-title">${item.title}</h3><p class="list-item-meta">${item.details || ''}</p><p class="list-item-desc">${item.description || ''}</p><button class="watch-now-btn" onclick="event.stopPropagation(); showDetailsPage('${item.id}', 'movie')">Watch Now</button></div></div>`;
+             return `<div class="list-item" onclick="showDetailsPage('${item.id}', 'movie')">
+                        <div class="list-item-poster">
+                            <img loading="lazy" src="${item.imageUrl}" alt="${item.title}">
+                            ${languageTagHTML}
+                        </div>
+                        <div class="list-item-info">
+                            <h3 class="list-item-title">${item.title}</h3>
+                            <p class="list-item-meta">${item.description || ''}</p>
+                        </div>
+                    </div>`;
         }
         
+        // === NEW SLIDER FUNCTION START ===
         function activateSlider() {
+            const container = document.querySelector('.slider-container');
             const wrapper = document.querySelector('.slider-wrapper');
-            const dots = document.querySelectorAll('.dot');
-            let currentIndex = 0;
-            const totalSlides = allBannersData.length;
-            if (!wrapper || totalSlides <= 1) return;
-            clearInterval(sliderInterval);
-            function goToSlide(index) {
-                currentIndex = index;
+            const dotsContainer = document.querySelector('.slider-dots');
+
+            if (!container || !wrapper || !dotsContainer || container.classList.contains('slider-active')) return;
+
+            let slides = Array.from(wrapper.children);
+            const slideCount = slides.length;
+            if (slideCount <= 1) return;
+
+            let currentIndex = 1;
+            let isDragging = false;
+            let startPos = 0;
+            let currentTranslate = 0;
+            let prevTranslate = 0;
+            let sliderInterval;
+
+            const firstClone = slides[0].cloneNode(true);
+            const lastClone = slides[slideCount - 1].cloneNode(true);
+            wrapper.appendChild(firstClone);
+            wrapper.prepend(lastClone);
+
+            const updateDots = () => {
+                const dots = Array.from(dotsContainer.children);
+                let dotIndex = currentIndex - 1;
+                if (dotIndex < 0) dotIndex = slideCount - 1;
+                if (dotIndex >= slideCount) dotIndex = 0;
+                dots.forEach((dot, index) => dot.classList.toggle('active', index === dotIndex));
+            };
+
+            const setPosition = () => {
                 wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-                dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
-            }
-            sliderInterval = setInterval(() => goToSlide((currentIndex + 1) % totalSlides), 5000);
+                updateDots();
+            };
+            
+            wrapper.style.transition = 'none';
+            setPosition();
+
+            const startAutoplay = () => {
+                clearInterval(sliderInterval);
+                sliderInterval = setInterval(() => {
+                    currentIndex++;
+                    wrapper.style.transition = 'transform 0.7s ease-in-out';
+                    setPosition();
+                }, 5000);
+            };
+
+            wrapper.addEventListener('transitionend', () => {
+                if (currentIndex >= slideCount + 1) {
+                    wrapper.style.transition = 'none';
+                    currentIndex = 1;
+                    setPosition();
+                }
+                if (currentIndex <= 0) {
+                    wrapper.style.transition = 'none';
+                    currentIndex = slideCount;
+                    setPosition();
+                }
+            });
+
+            const getPositionX = (event) => (event.touches ? event.touches[0].clientX : event.clientX);
+
+            const dragStart = (event) => {
+                isDragging = true;
+                startPos = getPositionX(event);
+                prevTranslate = -currentIndex * container.clientWidth;
+                clearInterval(sliderInterval);
+                wrapper.style.transition = 'none';
+            };
+
+            const dragging = (event) => {
+                if (!isDragging) return;
+                const currentPosition = getPositionX(event);
+                currentTranslate = prevTranslate + currentPosition - startPos;
+                wrapper.style.transform = `translateX(${currentTranslate}px)`;
+            };
+
+            const dragEnd = (event) => {
+                if (!isDragging) return;
+                isDragging = false;
+                const movedBy = currentTranslate - prevTranslate;
+
+                if (movedBy < -50) currentIndex++;
+                if (movedBy > 50) currentIndex--;
+                
+                wrapper.style.transition = 'transform 0.5s ease-out';
+                setPosition();
+                startAutoplay();
+            };
+
+            container.addEventListener('touchstart', dragStart, { passive: true });
+            container.addEventListener('touchmove', dragging, { passive: true });
+            container.addEventListener('touchend', dragEnd);
+
+            startAutoplay();
+            container.classList.add('slider-active');
         }
+        // === NEW SLIDER FUNCTION END ===
 
         function showView(viewId) {
             if (currentViewId !== viewId) { lastView = currentViewId; currentViewId = viewId; }
             ['home-view', 'category-view', 'details-view', 'search-view'].forEach(id => {
                 const element = document.getElementById(id);
-                if(element) element.style.display = (id === viewId) ? 'block' : 'none';
-                if (id === 'search-view' && id === viewId) {
-                    element.style.display = 'flex';
-                    document.getElementById('search-page-input').value = '';
-                    document.getElementById('search-results-list').innerHTML = allMoviesData.map(createDetailedListItem).join('');
-                }
+                if(element) element.style.display = (id === viewId) ? (id === 'search-view' ? 'flex' : 'block') : 'none';
             });
             document.body.style.overflow = (viewId === 'search-view') ? 'hidden' : 'auto';
-            if (viewId === 'home-view') renderHomePage();
-            if (viewId === 'category-view') document.getElementById('category-view').innerHTML = `<h2 class="section-title">All Movies</h2><section class="manga-list">${allMoviesData.map(createDetailedListItem).join('')}</section>`;
+            
+            renderCurrentView();
             window.scrollTo(0, 0);
         }
         
         function showDetailsPage(itemId, type) {
-            let data;
-            if (type === 'movie') { data = allMoviesData; } 
-            else if (type === 'banner') { data = allBannersData; } 
-            else if (type === 'update') { data = allUpdatesData; }
-
-            const item = data.find(m => m.id == itemId);
+            let item;
+            if (type === 'movie') { item = allMoviesData.find(m => m.id == itemId); } 
+            else if (type === 'banner') { item = allBannersData.find(m => m.id == itemId); } 
+            else if (type === 'update') { item = allUpdatesData.find(m => m.id == itemId); }
             if (!item) return;
             
             document.getElementById('details-view').innerHTML = `
@@ -264,6 +474,21 @@
             document.getElementById('search-results-list').innerHTML = filteredList.map(createDetailedListItem).join('');
         }
         
+        function renderCurrentView() {
+            switch (currentViewId) {
+                case 'home-view':
+                    renderHomePage();
+                    break;
+                case 'category-view':
+                    document.getElementById('category-view').innerHTML = `<h2 class="section-title">All Movies</h2><section class="manga-list">${allMoviesData.map(createDetailedListItem).join('')}</section>`;
+                    break;
+                case 'search-view':
+                    document.getElementById('search-page-input').value = '';
+                    handleLiveSearch();
+                    break;
+            }
+        }
+
         window.showView = showView;
         window.showDetailsPage = showDetailsPage;
         window.handleLiveSearch = handleLiveSearch;
@@ -272,26 +497,20 @@
         onValue(ref(db, 'movies/'), (snapshot) => {
             const data = snapshot.val();
             allMoviesData = data ? Object.entries(data).reverse().map(([id, value]) => ({ id, ...value })) : [];
-            if (currentViewId === 'home-view' || currentViewId === 'category-view') {
-                 showView(currentViewId);
-            }
+            renderCurrentView();
         });
 
         onValue(ref(db, 'banners/'), (snapshot) => {
             const data = snapshot.val();
             allBannersData = data ? Object.entries(data).reverse().map(([id, value]) => ({ id, ...value })) : [];
-            if (currentViewId === 'home-view') {
-                renderHomePage();
-            }
+            renderCurrentView();
         });
 
         onValue(ref(db, 'updates/'), (snapshot) => {
             const data = snapshot.val();
             allUpdatesData = data ? Object.entries(data).reverse().map(([id, value]) => ({ id, ...value })) : [];
-            if (currentViewId === 'home-view') {
-                renderHomePage();
-            }
+            renderCurrentView();
         });
     </script>
 </body>
-</html>
+   </html>
